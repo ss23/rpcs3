@@ -183,7 +183,7 @@ struct lv2_prx_t
 s32 sys_prx_load_module(vm::cptr<char> path, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt);
 s32 sys_prx_load_module_list(s32 count, vm::cpptr<char> path_list, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt, vm::ptr<u32> id_list);
 s32 sys_prx_load_module_on_memcontainer();
-s32 sys_prx_load_module_by_fd();
+s32 sys_prx_load_module_by_fd(u32 fd, u64 offset, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt);
 s32 sys_prx_load_module_on_memcontainer_by_fd();
 s32 sys_prx_start_module(s32 id, u64 flags, vm::ptr<sys_prx_start_module_option_t> pOpt);
 s32 sys_prx_stop_module(s32 id, u64 flags, vm::ptr<sys_prx_stop_module_option_t> pOpt);

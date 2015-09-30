@@ -13,6 +13,7 @@
 #include "Crypto/unself.h"
 #include "Loader/ELF64.h"
 #include "sys_prx.h"
+#include "sys_fs.h"
 
 SysCallBase sys_prx("sys_prx");
 
@@ -21,17 +22,9 @@ lv2_prx_t::lv2_prx_t()
 {
 }
 
-s32 prx_load_module(std::string path, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt)
+s32 prx_load_module_from_vfsfile(vfsFile f, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt, std::shared_ptr<lv2_prx_t> prx)
 {
-	sys_prx.Warning("prx_load_module(path='%s', flags=0x%llx, pOpt=*0x%x)", path.c_str(), flags, pOpt);
-
 	loader::handlers::elf64 loader;
-
-	vfsFile f(path);
-	if (!f.IsOpened())
-	{
-		return CELL_PRX_ERROR_UNKNOWN_MODULE;
-	}
 
 	if (loader.init(f) != loader::handler::error_code::ok || !loader.is_sprx())
 	{
@@ -41,7 +34,7 @@ s32 prx_load_module(std::string path, u64 flags, vm::ptr<sys_prx_load_module_opt
 	loader::handlers::elf64::sprx_info info;
 	loader.load_sprx(info);
 
-	auto prx = idm::make_ptr<lv2_prx_t>();
+	prx = idm::make_ptr<lv2_prx_t>();
 
 	auto meta = info.modules[""];
 	prx->start.set(meta.exports[0xBC9A0086]);
@@ -138,8 +131,29 @@ s32 prx_load_module(std::string path, u64 flags, vm::ptr<sys_prx_load_module_opt
 			sys_prx.Error("Failed to process executable area (addr=0x%x, size=0x%x)", addr, size);
 		}
 	}
+	return CELL_OK;
+}
 
-	return prx->id;
+s32 prx_load_module(std::string path, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt)
+{
+	sys_prx.Warning("prx_load_module(path='%s', flags=0x%llx, pOpt=*0x%x)", path.c_str(), flags, pOpt);
+
+	vfsFile f(path);
+	if (!f.IsOpened())
+	{
+		return CELL_PRX_ERROR_UNKNOWN_MODULE;
+	}
+
+	std::shared_ptr<lv2_prx_t> prx;
+	s32 res = prx_load_module_from_vfsfile(f, flags, pOpt, prx);
+	if (res == CELL_OK)
+	{
+		return prx->id;
+	}
+	else
+	{
+		return res;
+	}
 }
 
 s32 sys_prx_load_module(vm::cptr<char> path, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt)
@@ -174,10 +188,27 @@ s32 sys_prx_load_module_on_memcontainer()
 	return CELL_OK;
 }
 
-s32 sys_prx_load_module_by_fd()
+s32 sys_prx_load_module_by_fd(u32 fd, u64 offset, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt)
 {
-	sys_prx.Todo("sys_prx_load_module_by_fd()");
+	sys_prx.Warning("sys_prx_load_module_by_fd(fd=0x%x, offset=0x%llx, flags=0x%llx, pOpt=*0x%x)", fd, offset, flags, pOpt);
 	return CELL_OK;
+	/*
+	const auto f = idm::get<lv2_file_t>(fd);
+	if (!f)
+	{
+		return CELL_FS_EBADF;
+	}
+
+	std::shared_ptr<lv2_prx_t> prx;
+	s32 res = prx_load_module_from_vfsfile(f, flags, pOpt, prx);
+	if (res == CELL_OK)
+	{
+		return prx->id;
+	}
+	else
+	{
+		return res;
+	} */
 }
 
 s32 sys_prx_load_module_on_memcontainer_by_fd()
