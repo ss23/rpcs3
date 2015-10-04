@@ -191,8 +191,8 @@ s32 sys_prx_load_module_on_memcontainer()
 s32 sys_prx_load_module_by_fd(u32 fd, u64 offset, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt)
 {
 	sys_prx.Warning("sys_prx_load_module_by_fd(fd=0x%x, offset=0x%llx, flags=0x%llx, pOpt=*0x%x)", fd, offset, flags, pOpt);
-	return CELL_OK;
-	/*
+	//return CELL_OK;
+
 	const auto f = idm::get<lv2_file_t>(fd);
 	if (!f)
 	{
@@ -200,7 +200,7 @@ s32 sys_prx_load_module_by_fd(u32 fd, u64 offset, u64 flags, vm::ptr<sys_prx_loa
 	}
 
 	std::shared_ptr<lv2_prx_t> prx;
-	s32 res = prx_load_module_from_vfsfile(f, flags, pOpt, prx);
+	s32 res = prx_load_module_from_vfsfile(f->file, flags, pOpt, prx);
 	if (res == CELL_OK)
 	{
 		return prx->id;
@@ -208,7 +208,7 @@ s32 sys_prx_load_module_by_fd(u32 fd, u64 offset, u64 flags, vm::ptr<sys_prx_loa
 	else
 	{
 		return res;
-	} */
+	}
 }
 
 s32 sys_prx_load_module_on_memcontainer_by_fd()
