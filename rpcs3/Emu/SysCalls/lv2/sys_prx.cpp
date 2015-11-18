@@ -280,9 +280,10 @@ s32 sys_prx_get_module_info(s32 id, u64 flags, vm::ptr<sys_prx_module_info_t> in
 	return CELL_OK;
 }
 
-s32 sys_prx_register_library(vm::ptr<void> library)
+s32 sys_prx_register_library(vm::ptr<sprx_import_info_new> library)
 {
-	sys_prx.Todo("sys_prx_register_library(library=*0x%x)", library);
+	sys_prx.Todo("sys_prx_register_library(library=*0x%x, name=*0x%x / %s)", library, library->lib_name_offset, vm::base(library->lib_name_offset));
+
 	return CELL_OK;
 }
 

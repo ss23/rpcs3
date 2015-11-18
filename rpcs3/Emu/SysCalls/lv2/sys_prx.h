@@ -179,6 +179,22 @@ struct lv2_prx_t
 	lv2_prx_t();
 };
 
+struct sprx_import_info_new
+{
+	u8 size;
+	u8 unused;
+	be_t<u16> version;
+	be_t<u16> attr;
+	be_t<u16> func_count;
+	be_t<u16> vars_count;
+	be_t<u16> tls_vars_count;
+	u8 reserved[4];
+	be_t<u32> lib_name_offset;
+	be_t<u32> nid_offset;
+	be_t<u32> stub_offset;
+	//...
+};
+
 // SysCalls
 s32 sys_prx_load_module(vm::cptr<char> path, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt);
 s32 sys_prx_load_module_list(s32 count, vm::cpptr<char> path_list, u64 flags, vm::ptr<sys_prx_load_module_option_t> pOpt, vm::ptr<u32> id_list);
@@ -193,7 +209,7 @@ s32 sys_prx_get_my_module_id();
 s32 sys_prx_get_module_id_by_address();
 s32 sys_prx_get_module_id_by_name(vm::cptr<char> name, u64 flags, vm::ptr<sys_prx_get_module_id_by_name_option_t> pOpt);
 s32 sys_prx_get_module_info(s32 id, u64 flags, vm::ptr<sys_prx_module_info_t> info);
-s32 sys_prx_register_library(vm::ptr<void> library);
+s32 sys_prx_register_library(vm::ptr<sprx_import_info_new> library);
 s32 sys_prx_unregister_library(vm::ptr<void> library);
 s32 sys_prx_get_ppu_guid();
 s32 sys_prx_register_module();
