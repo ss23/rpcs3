@@ -282,7 +282,37 @@ s32 sys_prx_get_module_info(s32 id, u64 flags, vm::ptr<sys_prx_module_info_t> in
 
 s32 sys_prx_register_library(vm::ptr<sprx_import_info_new> library)
 {
-	sys_prx.Todo("sys_prx_register_library(library=*0x%x, name=*0x%x / %s)", library, library->lib_name_offset, vm::base(library->lib_name_offset));
+	char * libraryName = (char*)vm::base(library->lib_name_offset);
+
+	sys_prx.Todo("sys_prx_register_library(library=*0x%x) - name=%s)", library, libraryName);
+
+	for (u32 i = 0; i < library->func_count; i++) {
+		const u32 nid = vm::read32(library->nid_offset + 4 * i);
+		const u32 addr = vm::read32(library->stub_offset + 4 * i);
+		sys_prx.Todo("importing function from %s - 0x%x fnid=0x%x", libraryName, library->nid_offset + 4*i, nid);
+
+		u32 index;
+		auto func = get_ppu_func_by_nid(nid, &index);
+
+		if (!func)
+		{
+			sys_prx.Error("Unknown function '%s' in '%s' library (0x%x)", get_ps3_function_name(nid), libraryName, addr);
+			Module<>* module;
+
+			index = add_ppu_func(ModuleFunc(nid, 0, module, nullptr, nullptr));
+		}
+		else
+		{
+			const bool is_lle = func->lle_func && !(func->flags & MFF_FORCED_HLE);
+			sys_prx.Error("Imported %sfunction '%s' in '%s' library (0x%x)", (is_lle ? "LLE " : ""), get_ps3_function_name(nid), libraryName, addr);
+		}
+
+		if (!patch_ppu_import(addr, index))
+		{
+			sys_prx.Error("Failed to inject code at address 0x%x with index 0x%x", addr, index);
+		}
+	}
+
 
 	return CELL_OK;
 }
